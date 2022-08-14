@@ -6,7 +6,7 @@ pygame.font.init()
 font = pygame.font.SysFont('Consolas', 12)
 
 line_func = pygame.draw.aaline
-line_width = -1
+line_width = 1
 
 width, height = 1280, 720
 screen = pygame.display.set_mode((width, height))
