@@ -1,12 +1,13 @@
 import math
 import pygame
 from pygame import gfxdraw
-pygame.font.init()
 
+pygame.font.init()
 font = pygame.font.SysFont('Consolas', 12)
 
-width, height = 800, 600
+line_func = pygame.draw.aaline
 
+width, height = 800, 600
 screen = pygame.display.set_mode((width, height))
 
 empty = pygame.Color(0,0,0,0)
@@ -32,9 +33,9 @@ def draw_triangle(surf, point1, point2, theta, n):
 
     point3 = middle_point[0]+delta_x, middle_point[1]+delta_y
     
-    pygame.draw.aaline(surf, '#bbbbbb', point1, point2, 1)
-    pygame.draw.aaline(surf, '#bbbbbb', point1, point3, 1)
-    pygame.draw.aaline(surf, '#bbbbbb', point2, point3, 1)
+    line_func(surf, '#bbbbbb', point1, point2, 1)
+    line_func(surf, '#bbbbbb', point1, point3, 1)
+    line_func(surf, '#bbbbbb', point2, point3, 1)
 
     if n > 0:
         if inward:
@@ -100,6 +101,12 @@ while run:
             # Invert
             elif event.key == pygame.K_i:
                 inward = not inward
+
+            elif event.key == pygame.K_c:
+                if line_func == pygame.draw.aaline:
+                    line_func = pygame.draw.line
+                elif line_func == pygame.draw.line:
+                    line_func = pygame.draw.aaline
 
             draw_figure()
 
