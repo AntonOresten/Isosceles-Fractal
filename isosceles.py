@@ -6,10 +6,12 @@ pygame.font.init()
 font = pygame.font.SysFont('Consolas', 12)
 
 line_func = pygame.draw.aaline
+line_width = -1
 
-width, height = 800, 600
+width, height = 1280, 720
 screen = pygame.display.set_mode((width, height))
 
+background_color = '#202030'
 empty = pygame.Color(0,0,0,0)
 draw_surf = pygame.Surface((width, height), pygame.SRCALPHA, 32).convert_alpha()
 
@@ -33,9 +35,9 @@ def draw_triangle(surf, point1, point2, theta, n):
 
     point3 = middle_point[0]+delta_x, middle_point[1]+delta_y
     
-    line_func(surf, '#bbbbbb', point1, point2, 1)
-    line_func(surf, '#bbbbbb', point1, point3, 1)
-    line_func(surf, '#bbbbbb', point2, point3, 1)
+    line_func(surf, '#bbbbbb', point1, point2, line_width)
+    line_func(surf, '#bbbbbb', point1, point3, line_width)
+    line_func(surf, '#bbbbbb', point2, point3, line_width)
 
     if n > 0:
         if inward:
@@ -94,9 +96,9 @@ while run:
             
             # Change number of iterations
             elif event.key == pygame.K_x:
-                iterations += 1
+                iterations = max(0, iterations+1)
             elif event.key == pygame.K_z:
-                iterations -= 1
+                iterations = max(0, iterations-1)
             
             # Invert
             elif event.key == pygame.K_i:
@@ -107,11 +109,20 @@ while run:
                     line_func = pygame.draw.line
                 elif line_func == pygame.draw.line:
                     line_func = pygame.draw.aaline
+            
+            elif event.key == pygame.K_q:
+                line_width = max(1, line_width-1)
+            elif event.key == pygame.K_w:
+                line_width = max(1, line_width+1)
+
+            angle = max(0, angle)
 
             draw_figure()
 
         elif event.type == pygame.MOUSEWHEEL:
             angle += event.y * 0.5
+            angle = max(0, angle)
+
             draw_figure()
             
     mouse_state = pygame.mouse.get_pressed()
@@ -133,12 +144,13 @@ while run:
         moving1 = False
         moving2 = False
 
-    screen.fill('#222222')
+    screen.fill(background_color)
     screen.blit(draw_surf, (0,0))
     screen.blit(font.render(
         f'iterations = {round(iterations)}, '
         f'angle = {round(angle,1)}, '
-        f'dimension = {round(1/(1+math.log2(math.cos(math.radians(angle)))),3)}',
+        f'dimension = {round(1/(1+math.log2(math.cos(math.radians(angle)))),3)}, '
+        f'width = {line_width}',
         True, (225, 230, 240)), (40, height-30))
 
     pygame.display.update()
