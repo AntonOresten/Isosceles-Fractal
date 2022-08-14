@@ -13,7 +13,7 @@ empty = pygame.Color(0,0,0,0)
 draw_surf = pygame.Surface((width, height), pygame.SRCALPHA, 32).convert_alpha()
 
 # Flawed algorithm/function that uses slopes and only utilizes the tan function
-# A better function would use sin and cos (would also probably be simpler.. idk)
+# A better function would use sin and cos (would probably be simpler as well.. idk)
 def draw_triangle(surf, point1, point2, theta, n):
     sgn = 1
     if point2[1] < point1[1]:
@@ -129,9 +129,9 @@ while run:
     screen.fill('#222222')
     screen.blit(draw_surf, (0,0))
     screen.blit(font.render(
-        f'I = {round(iterations)}, '
-        f'A = {round(angle,1)}, '
-        f'D = {round(1/(1+math.log2(math.cos(math.radians(angle)))),3)}',
+        f'iterations = {round(iterations)}, '
+        f'angle = {round(angle,1)}, '
+        f'dimension = {round(1/(1+math.log2(math.cos(math.radians(angle)))),3)}',
         True, (225, 230, 240)), (40, height-30))
 
     pygame.display.update()
