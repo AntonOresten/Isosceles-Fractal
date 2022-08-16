@@ -35,9 +35,11 @@ def draw_triangle(surf, point1, point2, theta, n):
 
     point3 = middle_point[0]+delta_x, middle_point[1]+delta_y
     
-    line_func(surf, '#bbbbbb', point1, point2, line_width)
-    line_func(surf, '#bbbbbb', point1, point3, line_width)
-    line_func(surf, '#bbbbbb', point2, point3, line_width)
+    if n < iterations_drawn:
+        if draw_base:
+            line_func(surf, '#bbbbbb', point1, point2, line_width)
+        line_func(surf, '#bbbbbb', point1, point3, line_width)
+        line_func(surf, '#bbbbbb', point2, point3, line_width)
 
     if n > 0:
         if inward:
@@ -69,7 +71,9 @@ point2_rect.center = (600, 400)
 
 angle = 40.0
 iterations = 7
+iterations_drawn = 1
 inward = False
+draw_base = False
 
 draw_figure()
 
@@ -114,6 +118,14 @@ while run:
                 line_width = max(1, line_width-1)
             elif event.key == pygame.K_w:
                 line_width = max(1, line_width+1)
+            
+            elif event.key == pygame.K_y:
+                iterations_drawn = min(iterations, max(1, iterations_drawn+1))
+            elif event.key == pygame.K_u:
+                iterations_drawn = max(1, iterations_drawn-1)
+
+            elif event.key == pygame.K_b:
+                draw_base = not draw_base
 
             angle = max(0, angle)
 
@@ -150,7 +162,8 @@ while run:
         f'iterations = {round(iterations)}, '
         f'angle = {round(angle,1)}, '
         f'dimension = {round(1/(1+math.log2(math.cos(math.radians(angle)))),3)}, '
-        f'width = {line_width}',
+        f'width = {line_width}, '
+        f'iterations_drawn = {iterations_drawn}',
         True, (225, 230, 240)), (40, height-30))
 
     pygame.display.update()
