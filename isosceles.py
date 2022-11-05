@@ -1,76 +1,72 @@
 import math
+import cmath
+
 import pygame
 from pygame import gfxdraw
+
+
+tuplify = lambda zs: [(z.real, z.imag) for z in zs]
+complify = lambda ts: [complex(*t) for t in ts]
+
 
 pygame.font.init()
 font = pygame.font.SysFont('Consolas', 12)
 
-line_func = pygame.draw.aaline
+line_func = pygame.draw.line
 line_width = 1
 
 width, height = 1280, 720
 screen = pygame.display.set_mode((width, height))
 
-background_color = '#202030'
+background_color = '#181820'
 empty = pygame.Color(0,0,0,0)
 draw_surf = pygame.Surface((width, height), pygame.SRCALPHA, 32).convert_alpha()
 
-# Flawed algorithm/function that uses slopes and only utilizes the tan function
-# A better function would use sin and cos to determine the next position (would probably be simpler as well.. idk)
-def draw_triangle(surf, point1, point2, theta, n):
-    sgn = 1
-    if point2[1] < point1[1]:
-        sgn = -1
-    try:
-        slope = (point1[1]-point2[1])/(point1[0]-point2[0])
-        slope_normal = -1/slope
-    except ZeroDivisionError:
-        return False
-    distance = ((point1[0]-point2[0])**2+(point1[1]-point2[1])**2)**0.5
-    middle_point = (point1[0]+point2[0])/2, (point1[1]+point2[1])/2
-    height = math.tan(math.radians(theta))*distance/2
-    
-    delta_x = (height**2/(slope_normal**2+1))**0.5*sgn
-    delta_y = slope_normal*delta_x
 
-    point3 = middle_point[0]+delta_x, middle_point[1]+delta_y
+def third_point(point1: complex, point2: complex, theta: float):
+    base_vector = point2-point1
+    base_length = abs(base_vector)
+    leg_length = base_length/(2*math.cos(theta))
+    scaling_factor = leg_length / base_length
+    leg_vector = base_vector * (math.cos(theta) + 1j*math.sin(theta)) * scaling_factor
+    return point1 + leg_vector
+
+
+def draw_triangle(surf, point1: complex, point2: complex, theta, n):
+    point3 = third_point(point1, point2, theta)
+    pos1, pos2, pos3 = tuplify([point1, point2, point3])
     
     if n < iterations_drawn:
         if draw_base:
-            line_func(surf, '#bbbbbb', point1, point2, line_width)
-        line_func(surf, '#bbbbbb', point1, point3, line_width)
-        line_func(surf, '#bbbbbb', point2, point3, line_width)
+            line_func(surf, '#bbbbbb', pos1, pos2, line_width)
+        line_func(surf, '#bbbbbb', pos1, pos3, line_width)
+        line_func(surf, '#bbbbbb', pos2, pos3, line_width)
 
     if n > 0:
         if inward:
-            draw_triangle(surf, point3, point1, theta, n-1)
-            draw_triangle(surf, point2, point3, theta, n-1)
-        else:
-            draw_triangle(surf, point1, point3, theta, n-1)
-            draw_triangle(surf, point3, point2, theta, n-1)
-            
-    return True
-
-#def draw_triangle(surf, point1, point2, theta, n):
-#    distance = ((point1[0]-point2[0])**2+(point1[1]-point2[1])**2)**0.5
-#    leg_length = distance/(2*math.cos(math.radians(theta)))
+            theta = -theta
+        draw_triangle(surf, point1, point3, theta, n-1)
+        draw_triangle(surf, point3, point2, theta, n-1)
     
 
 def draw_figure():
+    point1, point2 = complify([point1_rect.center, point2_rect.center])
     draw_surf.fill(empty)
-    draw_triangle(draw_surf, point1_rect.center, point2_rect.center, angle, iterations)
+    
+    # I think point1 and point2 need to be flipped because of pygames coordinate system (with the origin in the top left)
+    draw_triangle(draw_surf, point2, point1, math.radians(angle), iterations)
     gfxdraw.aacircle(draw_surf, *point1_rect.center, 4, pygame.Color('#dd2222'))
     gfxdraw.filled_circle(draw_surf, *point1_rect.center, 4, pygame.Color('#dd2222'))
     gfxdraw.aacircle(draw_surf, *point2_rect.center, 4, pygame.Color('#2266cc'))
     gfxdraw.filled_circle(draw_surf, *point2_rect.center, 4, pygame.Color('#2266cc'))
 
 point1_rect = pygame.Rect((0,0), (20,20))
-point1_rect.center = (200, 300)
+point1_rect.center = (100, height+360)
 point2_rect = pygame.Rect((0,0), (20,20))
-point2_rect.center = (600, 400)
+point2_rect.center = (width-100, height+360)
 
-angle = 40.0
-iterations = 7
+angle = 45.0
+iterations = 15
 iterations_drawn = 1
 inward = False
 draw_base = False
@@ -88,8 +84,11 @@ while run:
             run = False
         elif event.type == pygame.KEYDOWN:
 
+            if event.key == pygame.K_ESCAPE:
+                run = False
+
             # Increment angle
-            if event.key == pygame.K_m:
+            elif event.key == pygame.K_m:
                 angle += 0.2
             elif event.key == pygame.K_k:
                 angle += 1
@@ -167,5 +166,8 @@ while run:
         True, (225, 230, 240)), (40, height-30))
 
     pygame.display.update()
+
+
+pygame.image.save(screen, f"koch{iterations}.png")
 
 pygame.quit()
